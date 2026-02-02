@@ -88,5 +88,20 @@ public class StripeWebhookVerifierTest {
                 .hasMessageContaining("Could not extract payment intent id");
     }
 
+    @Test
+    void extract_fromDataObjectDeserializerObject() {
+        PaymentIntent intent = new PaymentIntent();
+        intent.setId("pi_fallback_2");
+
+        Object deser = new Object() {
+            public java.util.Optional getObject() {
+                return java.util.Optional.of(intent);
+            }
+        };
+
+        String id = verifier.extractPaymentIntentIdFromDeserializerObject(deser);
+        assertThat(id).isEqualTo("pi_fallback_2");
+    }
+
 
 }

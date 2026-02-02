@@ -49,21 +49,9 @@ public class StripeWebhookVerifier {
         } else if (dataObject instanceof java.util.Map) {
             paymentIntentId = (String) ((java.util.Map) dataObject).get("id");
         } else {
-            // Fallback: try using the data object deserializer if available. Use reflection so tests
-            // don't rely on Stripe SDK internal types being present.
+            // Fallback: try using the data object deserializer if available. Delegate to a testable helper.
             try {
-                java.lang.reflect.Method m = event.getClass().getMethod("getDataObjectDeserializer");
-                Object deser = m.invoke(event);
-                if (deser != null) {
-                    java.lang.reflect.Method getObject = deser.getClass().getMethod("getObject");
-                    Object opt = getObject.invoke(deser);
-                    if (opt instanceof java.util.Optional) {
-                        Object maybeIntent = ((java.util.Optional) opt).orElse(null);
-                        if (maybeIntent instanceof PaymentIntent) {
-                            paymentIntentId = ((PaymentIntent) maybeIntent).getId();
-                        }
-                    }
-                }
+                paymentIntentId = extractPaymentIntentIdFromDeserializer(event);
             } catch (Exception ignored) {
             }
         }
@@ -73,5 +61,33 @@ public class StripeWebhookVerifier {
         }
 
         return paymentIntentId;
+    }
+
+    // Visible for tests: extract id from the event's data object deserializer via reflection
+    String extractPaymentIntentIdFromDeserializer(Event event) {
+        try {
+            java.lang.reflect.Method m = event.getClass().getMethod("getDataObjectDeserializer");
+            Object deser = m.invoke(event);
+            return extractPaymentIntentIdFromDeserializerObject(deser);
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    // Exposed to ease testing directly with an arbitrary deserializer-like object
+    String extractPaymentIntentIdFromDeserializerObject(Object deser) {
+        try {
+            if (deser == null) return null;
+            java.lang.reflect.Method getObject = deser.getClass().getMethod("getObject");
+            Object opt = getObject.invoke(deser);
+            if (opt instanceof java.util.Optional) {
+                Object maybeIntent = ((java.util.Optional) opt).orElse(null);
+                if (maybeIntent instanceof PaymentIntent) {
+                    return ((PaymentIntent) maybeIntent).getId();
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
     }
 }
