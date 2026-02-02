@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: "maven"
+
+      - name: Build and run unit tests
+        run: mvn -B -DskipTests=false verify
+        working-directory: backend
+        env:
+          MAVEN_OPTS: -Xmx1024m
+
+      - name: Upload surefire reports (unit)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-unit
+          path: backend/target/surefire-reports/**
+
+      - name: Publish Unit Test Results to GitHub
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Unit tests
+          path: backend/target/surefire-reports/*.xml
+          reporter: junit
+
+      - name: Upload JaCoCo report (unit)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report-unit
+          path: backend/target/site/jacoco/**
+
+      - name: Publish coverage to Codecov (unit)
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          files: backend/target/jacoco.exec
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          CI: true
+
+  integration-tests:
+    needs: unit-tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: "maven"
+
+      - name: Build and run integration tests
+        run: mvn -B -DskipTests=false verify -DrunIntegration=true
+        working-directory: backend
+        env:
+          MAVEN_OPTS: -Xmx1024m
+          RUN_INTEGRATION: "true"
+
+      - name: Upload surefire reports (integration)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-integration
+          path: backend/target/surefire-reports/**
+
+      - name: Publish Integration Test Results to GitHub
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Integration tests
+          path: backend/target/surefire-reports/*.xml
+          reporter: junit
+
+      - name: Upload JaCoCo report (integration)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report-integration
+          path: backend/target/site/jacoco/**
+
+      - name: Publish coverage to Codecov (integration)
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          files: backend/target/jacoco.exec
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          CI: true
