@@ -1,0 +1,4 @@
+payments:
+stripe:
+apiKey: ${STRIPE_API_KEY}
+webhookSecret: ${STRIPE_WEBHOOK_SECRET}
