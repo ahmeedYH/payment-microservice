@@ -190,6 +190,7 @@
 								<element>BUNDLE</element>
 						<excludes>
 							<exclude>com/ahy/payment/gateway/impl/**</exclude>
+							<exclude>com/ahy/payment/exception/**</exclude>
 						</excludes>
 								<limits>
 									<limit>
