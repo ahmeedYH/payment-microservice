@@ -5,9 +5,15 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   unit-tests:
+    timeout-minutes: 45
     runs-on: ubuntu-latest
 
     steps:
@@ -60,6 +66,7 @@ jobs:
 
   integration-tests:
     needs: unit-tests
+    timeout-minutes: 60
     runs-on: ubuntu-latest
 
     steps:
