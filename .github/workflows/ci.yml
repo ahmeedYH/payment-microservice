@@ -42,7 +42,7 @@ jobs:
 
       - name: Publish Unit Test Results to GitHub
         if: always()
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v1.0.0
         with:
           name: Unit tests
           path: backend/target/surefire-reports/*.xml
@@ -96,7 +96,7 @@ jobs:
 
       - name: Publish Integration Test Results to GitHub
         if: always()
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v1.0.0
         with:
           name: Integration tests
           path: backend/target/surefire-reports/*.xml
