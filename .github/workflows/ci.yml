@@ -40,13 +40,7 @@ jobs:
           name: surefire-reports-unit
           path: backend/target/surefire-reports/**
 
-      - name: Publish Unit Test Results to GitHub
-        if: always()
-        uses: dorny/test-reporter@v1.0.0
-        with:
-          name: Unit tests
-          path: backend/target/surefire-reports/*.xml
-          reporter: junit
+      # Publish Unit Test Results to GitHub (removed due to action input change causing failures). Artifacts are still uploaded above.
 
       - name: Upload JaCoCo report (unit)
         if: always()
@@ -94,13 +88,7 @@ jobs:
           name: surefire-reports-integration
           path: backend/target/surefire-reports/**
 
-      - name: Publish Integration Test Results to GitHub
-        if: always()
-        uses: dorny/test-reporter@v1.0.0
-        with:
-          name: Integration tests
-          path: backend/target/surefire-reports/*.xml
-          reporter: junit
+      # Publish Integration Test Results to GitHub (removed due to action input change causing failures). Artifacts are still uploaded above.
 
       - name: Upload JaCoCo report (integration)
         if: always()
