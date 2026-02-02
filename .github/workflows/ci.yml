@@ -27,8 +27,11 @@ jobs:
           distribution: "temurin"
           cache: "maven"
 
-      - name: Build and run unit tests
-        run: mvn -B -DskipTests=false verify
+      - name: Build and run unit tests (verbose, capture logs)
+        run: |
+          java -version
+          mvn -version
+          mvn -B -DskipTests=false -DtrimStackTrace=false -e verify -DoutputFile=backend/build.log | tee backend/build.log || (cat backend/build.log && exit 1)
         working-directory: backend
         env:
           MAVEN_OPTS: -Xmx1024m
@@ -39,6 +42,13 @@ jobs:
         with:
           name: surefire-reports-unit
           path: backend/target/surefire-reports/**
+
+      - name: Upload unit build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-build-log
+          path: backend/build.log
 
       # Publish Unit Test Results to GitHub (removed due to action input change causing failures). Artifacts are still uploaded above.
 
@@ -74,8 +84,11 @@ jobs:
           distribution: "temurin"
           cache: "maven"
 
-      - name: Build and run integration tests
-        run: mvn -B -DskipTests=false verify -DrunIntegration=true
+      - name: Build and run integration tests (verbose, capture logs)
+        run: |
+          java -version
+          mvn -version
+          mvn -B -DskipTests=false -DtrimStackTrace=false -e verify -DrunIntegration=true -DoutputFile=backend/integration-build.log | tee backend/integration-build.log || (cat backend/integration-build.log && exit 1)
         working-directory: backend
         env:
           MAVEN_OPTS: -Xmx1024m
@@ -87,6 +100,13 @@ jobs:
         with:
           name: surefire-reports-integration
           path: backend/target/surefire-reports/**
+
+      - name: Upload integration build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-build-log
+          path: backend/integration-build.log
 
       # Publish Integration Test Results to GitHub (removed due to action input change causing failures). Artifacts are still uploaded above.
 
