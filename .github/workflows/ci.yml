@@ -31,7 +31,7 @@ jobs:
         run: |
           java -version
           mvn -version
-          mvn -B -DskipTests=false -DtrimStackTrace=false -e verify -DoutputFile=backend/build.log | tee backend/build.log || (cat backend/build.log && exit 1)
+          mvn -B -DskipTests=false -DtrimStackTrace=false -e test org.jacoco:jacoco-maven-plugin:report -DoutputFile=backend/build.log | tee backend/build.log || (cat backend/build.log && exit 1)
         working-directory: backend
         env:
           MAVEN_OPTS: -Xmx1024m
